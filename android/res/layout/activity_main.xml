@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/clouds">
+
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:orientation="vertical"
+       android:gravity="center"
+       android:layout_centerVertical="true"
+       android:layout_alignParentLeft="true"
+       android:layout_alignParentStart="true">
+       <Button
+           android:layout_width="@dimen/button_width"
+           android:layout_height="@dimen/button_height"
+           android:text="Yeni Oyun"
+           android:id="@+id/yeni"
+           android:background="@color/primary_red"
+           android:textColor="#fff"
+           android:layout_margin="5dp"
+          />
+
+       <Button
+           android:layout_width="@dimen/button_width"
+           android:layout_height="@dimen/button_height"
+           android:text="Yüksek Skorlar"
+           android:id="@+id/skor"
+           android:layout_margin="5dp"
+           android:background="@color/primary_red"
+           android:textColor="#fff"
+          />
+
+       <Button
+           android:layout_width="@dimen/button_width"
+           android:layout_height="@dimen/button_height"
+           android:text="Hakkında"
+           android:id="@+id/hakkinda"
+           android:background="@color/primary_red"
+           android:textColor="#fff"
+           android:layout_margin="5dp"
+            />
+
+       <Button
+           android:layout_width="@dimen/button_width"
+           android:layout_height="@dimen/button_height"
+           android:text="Çıkış"
+           android:id="@+id/cikis"
+           android:background="@color/primary_red"
+           android:textColor="#fff"
+           android:layout_margin="5dp"
+           />
+   </LinearLayout>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Oyun Sesleri"
+        android:id="@+id/ses"
+        android:checked="true"
+        android:textColor="#000"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+
+</RelativeLayout>
