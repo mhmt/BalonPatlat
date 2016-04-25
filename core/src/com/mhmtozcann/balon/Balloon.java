@@ -2,18 +2,22 @@ package com.mhmtozcann.balon;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.sun.glass.ui.SystemClipboard;
 
 public class Balloon extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
-	
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
+        Preferences prefs = Gdx.app.getPreferences("prefs");
+		System.out.println("Ses: "+prefs.getBoolean("ses",false));
 	}
 
 	@Override

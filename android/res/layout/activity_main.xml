@@ -9,9 +9,10 @@
        android:layout_height="wrap_content"
        android:orientation="vertical"
        android:gravity="center"
-       android:layout_centerVertical="true"
+       android:layout_above="@+id/ses"
        android:layout_alignParentLeft="true"
-       android:layout_alignParentStart="true">
+       android:layout_alignParentStart="true"
+       android:id="@+id/linearLayout">
        <Button
            android:layout_width="@dimen/button_width"
            android:layout_height="@dimen/button_height"
@@ -63,6 +64,29 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="italic"
+        android:text="Balon Patlat"
+        android:textSize="36sp"
+        android:id="@+id/textView"
+        android:gravity="center"
+        android:textColor="@color/primary_red"
+        android:layout_above="@+id/linearLayout"
+        android:layout_toRightOf="@+id/imageView"
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_marginBottom="125dp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:src="@drawable/shape"
+        android:layout_alignTop="@+id/textView"
+        android:layout_alignRight="@+id/ses"
+        android:layout_alignEnd="@+id/ses" />
 
 
 </RelativeLayout>
