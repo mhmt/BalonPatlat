@@ -1,31 +1,76 @@
 package com.mhmtozcann.balon;
 
+import java.util.Iterator;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.sun.glass.ui.SystemClipboard;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
+
+
 
 public class Balloon extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
-
+	int width;
+	public Array<Rectangle> balloons;
+	int height;
+	public long lastDropTime;
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		width = Gdx.graphics.getWidth();
+		height = Gdx.graphics.getHeight();
+		img = new Texture("balon.png");
         Preferences prefs = Gdx.app.getPreferences("prefs");
 		System.out.println("Ses: "+prefs.getBoolean("ses",false));
+		balloons = new Array<Rectangle>();
+	}
+	public void spawnBalloon() {
+		Rectangle balloon = new Rectangle();
+		balloon.x = MathUtils.random(0, 800-64);
+		balloon.y = 0;
+		balloon.width = 64;
+		balloon.height = 64;
+		balloons.add(balloon);
+		lastDropTime = TimeUtils.nanoTime();
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(255, 255, 255, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		batch.draw(img, 0, 0);
+		for(Rectangle raindrop: balloons) {
+			batch.draw(img, raindrop.x, raindrop.y);
+		}
 		batch.end();
+
+
+
+		if(TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnBalloon();
+
+
+		Iterator<Rectangle> iter = balloons.iterator();
+		while(iter.hasNext()) {
+			Rectangle balloon = iter.next();
+			balloon.y += 200 * Gdx.graphics.getDeltaTime();
+			if(balloon.y + 64 < 0) iter.remove();
+
+		}
+
 	}
+
+
 }
