@@ -20,7 +20,10 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 
 
+
 public class Balloon extends ApplicationAdapter {
+	public int TIME_ONE_SECOND = 1000000000;
+	public int TIME_HALF_SECOND = 500000000;
 	SpriteBatch batch;
 	Texture img;
 	int width;
@@ -32,7 +35,7 @@ public class Balloon extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
-		img = new Texture("balon.png");
+        img = new Texture(Gdx.files.internal("balloon-red.png"));
         Preferences prefs = Gdx.app.getPreferences("prefs");
 		System.out.println("Ses: "+prefs.getBoolean("ses",false));
 		balloons = new Array<Rectangle>();
@@ -59,7 +62,7 @@ public class Balloon extends ApplicationAdapter {
 
 
 
-		if(TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnBalloon();
+		if(TimeUtils.nanoTime() - lastDropTime > TIME_ONE_SECOND) spawnBalloon();
 
 
 		Iterator<Rectangle> iter = balloons.iterator();
