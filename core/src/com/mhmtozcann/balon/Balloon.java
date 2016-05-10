@@ -20,12 +20,16 @@ public class Balloon extends ApplicationAdapter {
 
 	public int TIME_ONE_SECOND = 1000000000;
 	public int TIME_HALF_SECOND = 500000000;
-    long time = 10;
+    long time = 30;
 
 	SpriteBatch batch;
 
 	Texture img;
-    boolean ingame = true;
+    boolean ingame = true,yellowShowed=false;
+    boolean red= false;
+    boolean green = false;
+    boolean black = false;
+    boolean yellow = false;
 	public Array<Balon> balloons;
 
 	int height;
@@ -36,6 +40,7 @@ public class Balloon extends ApplicationAdapter {
 
     int id = 0;
     int score = 0;
+    int yellowid;
 
     Preferences prefs;
 
@@ -44,6 +49,7 @@ public class Balloon extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
+        System.out.println("Height: "+ height+" Width: "+width);
 
         music = Gdx.audio.newMusic(Gdx.files.internal("maintheme.mp3"));
         music.setVolume(0.5f);
@@ -64,7 +70,13 @@ public class Balloon extends ApplicationAdapter {
 		balloons = new Array<Balon>();
 	}
 	public void spawnBalloon() {
-		balloons.add(new Balon(MathUtils.random(0,4),MathUtils.random(0,width-128),0,id));
+        if(MathUtils.random(0,5) == 4 ){
+           // if (yellowShowed == false) {
+                balloons.add(new Balon(3, MathUtils.random(0, width - 128), MathUtils.random(0, height - 128), id));  // %10 ihtimalle sarı balon oluştur
+                yellowid = balloons.size - 1;
+                yellowShowed = true;
+         //   }
+        }else balloons.add(new Balon(MathUtils.random(0,2),MathUtils.random(0,width-128),0,id));
         id++;
 		lastDropTime = TimeUtils.nanoTime();
 	}
@@ -83,6 +95,18 @@ public class Balloon extends ApplicationAdapter {
             for(Balon raindrop: balloons) {
                 try{
                     if(raindrop.isVisible()) {
+                        if(raindrop.TYPE == 1 || raindrop.TYPE == 2){
+                            if(MathUtils.random(0,10) == 9){
+                                switch (raindrop.TYPE) {// 1 YEŞİL  ,  2 SİYAH
+                                    case 1:
+                                        raindrop.updateBalon(2);
+                                        break;
+                                    case 2:
+                                        raindrop.updateBalon(1);
+                                        break;
+                                }
+                            }
+                        }
                         batch.draw(raindrop.getImg(), raindrop.getX(), raindrop.getY());
                     }
 
@@ -93,8 +117,9 @@ public class Balloon extends ApplicationAdapter {
             }
 
         }else{
-            font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
-
+            if(red && green && yellow && this.score>=100){
+                font.draw(batch,"KAZANDINIZ ! Skorunuz: "+score,width/2-170,height/2);
+            }else font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
         }
         batch.end();
         Gdx.input.setInputProcessor(new InputAdapter(){
@@ -108,6 +133,20 @@ public class Balloon extends ApplicationAdapter {
                         if(x > balon.getX() && x<balon.getX()+128){
                             if(height-y > balon.getY() && height-y < balon.getY()+128){
                                 System.out.println("Balon Patladı: "+balon.getId());
+                                switch (balon.TYPE){
+                                    case 0:
+                                        red = true;
+                                        break;
+                                    case 1:
+                                        green = true;
+                                        break;
+                                    case 2:
+                                        black = true;
+                                        break;
+                                    case 3:
+                                        yellow = true;
+                                        break;
+                                }
                                 balon.setVisible(false);
                                 score += balon.getScore();
                                 if(prefs.getBoolean("ses",true)) pop.play();
@@ -126,14 +165,23 @@ public class Balloon extends ApplicationAdapter {
         });
 
 		if(TimeUtils.nanoTime() - lastDropTime > TIME_ONE_SECOND){
+            if(yellowShowed){
+                for (Balon balon:balloons) {
+                    if(balon.TYPE == 3){
+                        balon.setVisible(false);
+                        yellowShowed = false;
+                    }
+                }
+            }
+
             spawnBalloon();
             time--;
-            if(time < 0){
+            if(time <= 0){
                 ingame = false;
                 prefs.putInteger("enyuksek",score);
                 prefs.flush();
             }
-            if(time < -3){
+            if(time <= -3){
                 Gdx.app.exit();
             }
 
@@ -144,11 +192,12 @@ public class Balloon extends ApplicationAdapter {
 		Iterator<Balon> iter = balloons.iterator();
 		while(iter.hasNext()) {
 			Balon balloon = iter.next();
-			balloon.setY((int)(200 * Gdx.graphics.getDeltaTime()));// += 200 * Gdx.graphics.getDeltaTime();
-			if(balloon.getY() + 128 < 0){
-                iter.remove();
 
+            balloon.setY((int) (200 * Gdx.graphics.getDeltaTime()));// += 200 * Gdx.graphics.getDeltaTime();
+            if (balloon.getY() + 128 < 0) {
+                iter.remove();
             }
+
 
 		}
 
@@ -162,13 +211,14 @@ public class Balloon extends ApplicationAdapter {
 
     public class Balon{
 		public Texture img;
+        public int TYPE;
 		private int x,y,score,height,width,id;
 		//private Rectangle balon;
         private boolean Visible = true;
 
 		public Balon(int type,int x,int y,int id){
 			/**
-			 @param type: 0 RED, 1 GREEN, 2 YELLOW, 3 BLACK
+			 @param type: 0 RED, 1 GREEN,  2 BLACK, 3 YELLOW
 			 **/
 			this.x = x;
 			this.y = y;
@@ -180,24 +230,43 @@ public class Balloon extends ApplicationAdapter {
 				case 0:
 					this.img  = new Texture(Gdx.files.internal("balloon-red.png"));
 					this.score = 10;
-
+                    this.TYPE = 0;
 					break;
 				case 1:
 					this.img  = new Texture(Gdx.files.internal("balloon-green.png"));
 					this.score = 5;
+                    this.TYPE = 1;
 					break;
-				case 2:
+                case 2:
+                    this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
+                    this.score = -10;
+                    this.TYPE = 2;
+                    break;
+				case 3:
 					this.img  = new Texture(Gdx.files.internal("balloon-yellow.png"));
 					this.score = 20;
+                    this.TYPE = 3;
 					break;
-				case 3:
-					this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
-					this.score = -10;
-					break;
+
 			}
 
 
 		}
+
+        public void updateBalon(int type){
+            switch (type){
+                case 1:
+                    this.img  = new Texture(Gdx.files.internal("balloon-green.png"));
+                    this.score = 5;
+                    this.TYPE = 1;
+                    break;
+                case 2:
+                    this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
+                    this.score = -10;
+                    this.TYPE = 2;
+                    break;
+            }
+        }
 
         public int getScore(){
             return this.score;
@@ -228,8 +297,8 @@ public class Balloon extends ApplicationAdapter {
         }
 
         public void setY(int y) {
-            this.y += y;
-            if(y + 64 < 0) this.Visible = false;
+          if(this.TYPE != 3)  this.y += y;
+          //  if(y + 128 < 0) this.Visible = false;
         }
     }
 
