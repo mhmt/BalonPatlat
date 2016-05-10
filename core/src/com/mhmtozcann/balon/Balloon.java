@@ -25,7 +25,7 @@ public class Balloon extends ApplicationAdapter {
 	SpriteBatch batch;
 
 	Texture img;
-    boolean ingame = true,yellowShowed=false;
+    boolean ingame = true,yellowShowed=false,won = false;
     boolean red= false;
     boolean green = false;
     boolean black = false;
@@ -41,7 +41,8 @@ public class Balloon extends ApplicationAdapter {
     int id = 0;
     int score = 0;
     int yellowid;
-
+    int next = 100;
+    int lvl = 1;
     Preferences prefs;
 
     @Override
@@ -83,14 +84,17 @@ public class Balloon extends ApplicationAdapter {
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(255, 255, 255, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        Gdx.gl.glClearColor(255, 255, 255, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         final BitmapFont font = new BitmapFont();
         font.setColor(Color.BLACK);
         font.getData().setScale(2,2);
         batch.begin();
 	    if(ingame){
-            font.draw(batch,"Puan: "+score,10,height-10);
+            font.draw(batch,"Puan: "+score+" Gerekli: "+next,10,height-10);
+            font.draw(batch,"Seviye: "+lvl,10,height-40);
             font.draw(batch,"Süre: "+time,width-150,height-10);
             for(Balon raindrop: balloons) {
                 try{
@@ -117,8 +121,13 @@ public class Balloon extends ApplicationAdapter {
             }
 
         }else{
-            if(red && green && yellow && this.score>=100){
-                font.draw(batch,"KAZANDINIZ ! Skorunuz: "+score,width/2-170,height/2);
+            if(red && green && yellow && this.score>=next){
+                font.draw(batch,"Skorunuz: "+score,width/2-130,height/2);
+                font.draw(batch,"KAZANDINIZ ! Sonraki Haritaya Geçiliyor..",width/2-240,height/2-40);
+                prefs.putInteger("enyuksek",score);
+                prefs.flush();
+                won = true;
+
             }else font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
         }
         batch.end();
@@ -178,11 +187,22 @@ public class Balloon extends ApplicationAdapter {
             time--;
             if(time <= 0){
                 ingame = false;
-                prefs.putInteger("enyuksek",score);
-                prefs.flush();
+
             }
             if(time <= -3){
-                Gdx.app.exit();
+               if(!won){
+                   Gdx.app.exit();
+               }else {
+                   time = 30;
+                   next += 100;
+                   lvl++;
+                   ingame = true;
+                   red= false;
+                   green=false;
+                   yellow=false;
+                   won=false;
+                   balloons.clear();
+               }
             }
 
         }
