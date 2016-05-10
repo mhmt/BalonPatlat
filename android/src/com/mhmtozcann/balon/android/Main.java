@@ -82,6 +82,10 @@ public class Main extends Activity implements View.OnClickListener{
         hakkinda.setOnClickListener(this);
         cikis.setOnClickListener(this);
 
+        if(prefs.getBoolean("ses",true)){
+            sesKontrol.setChecked(true);
+        }else sesKontrol.setChecked(false);
+
         sesKontrol.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

@@ -1,47 +1,45 @@
 package com.mhmtozcann.balon;
 
-import java.sql.Struct;
 import java.util.Iterator;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
-
-
-
 public class Balloon extends ApplicationAdapter {
     private static final String TAG ="InGame";
+
 	public int TIME_ONE_SECOND = 1000000000;
 	public int TIME_HALF_SECOND = 500000000;
-    long time = 45;
+    long time = 10;
+
 	SpriteBatch batch;
+
 	Texture img;
-	int width;
+    boolean ingame = true;
 	public Array<Balon> balloons;
+
 	int height;
-	public long lastDropTime;
+    int width;
+	public long lastDropTime,finishing;
+
     Music music,pop;
+
     int id = 0;
     int score = 0;
-	@Override
+
+    Preferences prefs;
+
+    @Override
 	public void create () {
 		batch = new SpriteBatch();
 		width = Gdx.graphics.getWidth();
@@ -55,7 +53,7 @@ public class Balloon extends ApplicationAdapter {
         pop.setVolume(0.5f);
         pop.setLooping(false);
 
-        Preferences prefs = Gdx.app.getPreferences("prefs");
+        prefs = Gdx.app.getPreferences("prefs");
 		System.out.println("Ses: "+prefs.getBoolean("ses",true));
         if(prefs.getBoolean("ses",true)){
             music.play();
@@ -78,22 +76,27 @@ public class Balloon extends ApplicationAdapter {
         final BitmapFont font = new BitmapFont();
         font.setColor(Color.BLACK);
         font.getData().setScale(2,2);
-		batch.begin();
-        font.draw(batch,"Puan: "+score,10,height-10);
-        font.draw(batch,"Süre: "+time,width-150,height-10);
-		for(Balon raindrop: balloons) {
-            try{
-                if(raindrop.isVisible()) {
-                    batch.draw(raindrop.getImg(), raindrop.getX(), raindrop.getY());
+        batch.begin();
+	    if(ingame){
+            font.draw(batch,"Puan: "+score,10,height-10);
+            font.draw(batch,"Süre: "+time,width-150,height-10);
+            for(Balon raindrop: balloons) {
+                try{
+                    if(raindrop.isVisible()) {
+                        batch.draw(raindrop.getImg(), raindrop.getX(), raindrop.getY());
+                    }
+
+                }catch (Exception e){
+                    //System.out.println(TAG+ " render: "+ e.toString() );
                 }
 
-            }catch (Exception e){
-                //System.out.println(TAG+ " render: "+ e.toString() );
             }
 
-		}
-		batch.end();
+        }else{
+            font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
 
+        }
+        batch.end();
         Gdx.input.setInputProcessor(new InputAdapter(){
             @Override
             public boolean touchDown (int x, int y, int pointer, int button) {
@@ -107,7 +110,7 @@ public class Balloon extends ApplicationAdapter {
                                 System.out.println("Balon Patladı: "+balon.getId());
                                 balon.setVisible(false);
                                 score += balon.getScore();
-                                pop.play();
+                                if(prefs.getBoolean("ses",true)) pop.play();
                             }
                         }
                     }
@@ -125,9 +128,17 @@ public class Balloon extends ApplicationAdapter {
 		if(TimeUtils.nanoTime() - lastDropTime > TIME_ONE_SECOND){
             spawnBalloon();
             time--;
-            if(time < 0) Gdx.app.exit();
+            if(time < 0){
+                ingame = false;
+                prefs.putInteger("enyuksek",score);
+                prefs.flush();
+            }
+            if(time < -3){
+                Gdx.app.exit();
+            }
 
         }
+
 
 
 		Iterator<Balon> iter = balloons.iterator();
