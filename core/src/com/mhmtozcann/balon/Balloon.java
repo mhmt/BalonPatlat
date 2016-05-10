@@ -38,7 +38,7 @@ public class Balloon extends ApplicationAdapter {
 	public Array<Balon> balloons;
 	int height;
 	public long lastDropTime;
-    Music music;
+    Music music,pop;
     int id = 0;
     int score = 0;
 	@Override
@@ -50,6 +50,11 @@ public class Balloon extends ApplicationAdapter {
         music = Gdx.audio.newMusic(Gdx.files.internal("maintheme.mp3"));
         music.setVolume(0.5f);
         music.setLooping(true);
+
+        pop = Gdx.audio.newMusic(Gdx.files.internal("balloon-pop.mp3"));
+        pop.setVolume(0.5f);
+        pop.setLooping(false);
+
         Preferences prefs = Gdx.app.getPreferences("prefs");
 		System.out.println("Ses: "+prefs.getBoolean("ses",true));
         if(prefs.getBoolean("ses",true)){
@@ -102,9 +107,7 @@ public class Balloon extends ApplicationAdapter {
                                 System.out.println("Balon Patladı: "+balon.getId());
                                 balon.setVisible(false);
                                 score += balon.getScore();
-                           /*     batch.begin();
-                                font.draw(batch,"Score: "+score,10,height-10);
-                                batch.end();*/
+                                pop.play();
                             }
                         }
                     }
