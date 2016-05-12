@@ -142,7 +142,7 @@ public class Balloon extends ApplicationAdapter {
                 font.draw(batch,"KAZANDINIZ! Sonraki Seviyeye Geçiliyor..",width/2-240,height/2-60);
                 prefs.putInteger("enyuksek",score);
                 prefs.flush();
-                if(lvl <= 3)   won = true;
+                if(lvl != 3)   won = true;
                 else won=false;
             }else font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
         }
@@ -209,15 +209,19 @@ public class Balloon extends ApplicationAdapter {
                if(!won){
                    Gdx.app.exit();
                }else {
-                   time = 30;
-                   next += 100;
-                   lvl++;
-                   ingame = true;
-                   red= false;
-                   green=false;
-                   yellow=false;
-                   won=false;
-                   balloons.clear();
+                   if(lvl == 3){
+                       Gdx.app.exit();
+                   }else {
+                       time = 30;
+                       next += 100;
+                       lvl++;
+                       ingame = true;
+                       red = false;
+                       green = false;
+                       yellow = false;
+                       won = false;
+                       balloons.clear();
+                   }
                }
             }
 
@@ -334,6 +338,12 @@ public class Balloon extends ApplicationAdapter {
 
         public void setY(int y) {
           if(this.TYPE != 3)  this.y += y;
+            if(this.TYPE == 0) {
+                if(MathUtils.randomBoolean()) {
+                    if (MathUtils.randomBoolean()) this.x += MathUtils.random(0, 30);
+                    else this.x -= MathUtils.random(0, 30);
+                }
+            }
           //  if(y + 128 < 0) this.Visible = false;
         }
     }
