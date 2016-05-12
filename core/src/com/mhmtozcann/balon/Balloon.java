@@ -84,16 +84,32 @@ public class Balloon extends ApplicationAdapter {
 
 	@Override
 	public void render () {
+        switch (lvl){
+            case 1:
+                Gdx.gl.glClearColor(79 /255f, 98/255f,142/255f, 1);
+                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                break;
+            case 2:
+                Gdx.gl.glClearColor(151 /255f, 117/255f,170/255f, 1);
+                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                break;
+            case 3:
+                Gdx.gl.glClearColor(177 /255f, 89/255f,131/255f, 1);
+                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                break;
+            default:
+                Gdx.gl.glClearColor(255, 255, 255, 1);
+                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                break;
+        }
 
-        Gdx.gl.glClearColor(255, 255, 255, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         final BitmapFont font = new BitmapFont();
         font.setColor(Color.BLACK);
         font.getData().setScale(2,2);
         batch.begin();
 	    if(ingame){
-            font.draw(batch,"Puan: "+score+" Gerekli: "+next,10,height-10);
+            font.draw(batch,"Puan: "+score+"  Gerekli: "+next,10,height-10);
             font.draw(batch,"Seviye: "+lvl,10,height-40);
             font.draw(batch,"Süre: "+time,width-150,height-10);
             for(Balon raindrop: balloons) {
@@ -122,12 +138,12 @@ public class Balloon extends ApplicationAdapter {
 
         }else{
             if(red && green && yellow && this.score>=next){
-                font.draw(batch,"Skorunuz: "+score,width/2-130,height/2);
-                font.draw(batch,"KAZANDINIZ ! Sonraki Haritaya Geçiliyor..",width/2-240,height/2-40);
+                font.draw(batch,"Skorunuz: "+score,width/2-120,height/2);
+                font.draw(batch,"KAZANDINIZ! Sonraki Seviyeye Geçiliyor..",width/2-240,height/2-60);
                 prefs.putInteger("enyuksek",score);
                 prefs.flush();
-                won = true;
-
+                if(lvl <= 3)   won = true;
+                else won=false;
             }else font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
         }
         batch.end();
