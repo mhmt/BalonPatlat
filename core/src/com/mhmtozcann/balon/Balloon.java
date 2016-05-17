@@ -37,7 +37,7 @@ public class Balloon extends ApplicationAdapter {
 	public long lastDropTime,finishing;
 
     Music music,pop;
-
+    BitmapFont font;
     int id = 0;
     int score = 0;
     int yellowid;
@@ -60,6 +60,10 @@ public class Balloon extends ApplicationAdapter {
         pop.setVolume(0.5f);
         pop.setLooping(false);
 
+       font = new BitmapFont();
+        font.setColor(Color.BLACK);
+        font.getData().setScale(2,2);
+
         prefs = Gdx.app.getPreferences("prefs");
 		System.out.println("Ses: "+prefs.getBoolean("ses",true));
         if(prefs.getBoolean("ses",true)){
@@ -67,17 +71,21 @@ public class Balloon extends ApplicationAdapter {
         }else music.stop();
 
 
-
 		balloons = new Array<Balon>();
 	}
 	public void spawnBalloon() {
+        int heights;
+        if(balloons.size == 0 && lvl == 1){
+            heights = 128;
+        }else heights = 82;
         if(MathUtils.random(0,5) == 4 ){
            // if (yellowShowed == false) {
-                balloons.add(new Balon(3, MathUtils.random(0, width - 128), MathUtils.random(0, height - 128), id));  // %10 ihtimalle sarı balon oluştur
+
+                balloons.add(new Balon(this.lvl ,3, MathUtils.random(0, width - heights), MathUtils.random(0, height - heights), id));  // %10 ihtimalle sarı balon oluştur
                 yellowid = balloons.size - 1;
                 yellowShowed = true;
          //   }
-        }else balloons.add(new Balon(MathUtils.random(0,2),MathUtils.random(0,width-128),0,id));
+        }else balloons.add(new Balon(this.lvl,MathUtils.random(0,2),MathUtils.random(0,width-heights),0,id));
         id++;
 		lastDropTime = TimeUtils.nanoTime();
 	}
@@ -104,14 +112,12 @@ public class Balloon extends ApplicationAdapter {
         }
 
 
-        final BitmapFont font = new BitmapFont();
-        font.setColor(Color.BLACK);
-        font.getData().setScale(2,2);
+
         batch.begin();
 	    if(ingame){
             font.draw(batch,"Puan: "+score+"  Gerekli: "+next,10,height-10);
-            font.draw(batch,"Seviye: "+lvl,10,height-40);
-            font.draw(batch,"Süre: "+time,width-150,height-10);
+            font.draw(batch,"Seviye: "+lvl,10,height-50);
+            font.draw(batch,"Süre: "+time,width-160,height-10);
             for(Balon raindrop: balloons) {
                 try{
                     if(raindrop.isVisible()) {
@@ -137,14 +143,14 @@ public class Balloon extends ApplicationAdapter {
             }
 
         }else{
-            if(red && green && yellow && this.score>=next){
+            if(red && green && yellow && black && this.score>=next){
                 font.draw(batch,"Skorunuz: "+score,width/2-120,height/2);
                 font.draw(batch,"KAZANDINIZ! Sonraki Seviyeye Geçiliyor..",width/2-240,height/2-60);
                 prefs.putInteger("enyuksek",score);
                 prefs.flush();
                 if(lvl != 3)   won = true;
                 else won=false;
-            }else font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-150,height/2);
+            }else font.draw(batch,"Oyun Bitti! Skorunuz: "+score,width/2-140,height/2);
         }
         batch.end();
         Gdx.input.setInputProcessor(new InputAdapter(){
@@ -155,8 +161,8 @@ public class Balloon extends ApplicationAdapter {
                 for (Balon balon:balloons) {
                     if(balon.isVisible()){
                         System.out.println("Balon: "+balon.getX()+","+balon.getY());
-                        if(x > balon.getX() && x<balon.getX()+128){
-                            if(height-y > balon.getY() && height-y < balon.getY()+128){
+                        if(x > balon.getX() && x<balon.getX()+balon.height){
+                            if(height-y > balon.getY() && height-y < balon.getY()+balon.height){
                                 System.out.println("Balon Patladı: "+balon.getId());
                                 switch (balon.TYPE){
                                     case 0:
@@ -206,12 +212,10 @@ public class Balloon extends ApplicationAdapter {
 
             }
             if(time <= -3){
-               if(!won){
+               if(!won || lvl >= 3){
                    Gdx.app.exit();
                }else {
-                   if(lvl == 3){
-                       Gdx.app.exit();
-                   }else {
+
                        time = 30;
                        next += 100;
                        lvl++;
@@ -219,9 +223,10 @@ public class Balloon extends ApplicationAdapter {
                        red = false;
                        green = false;
                        yellow = false;
+                       black =false;
                        won = false;
                        balloons.clear();
-                   }
+
                }
             }
 
@@ -232,9 +237,9 @@ public class Balloon extends ApplicationAdapter {
 		Iterator<Balon> iter = balloons.iterator();
 		while(iter.hasNext()) {
 			Balon balloon = iter.next();
-
-            balloon.setY((int) (200 * Gdx.graphics.getDeltaTime()));// += 200 * Gdx.graphics.getDeltaTime();
-            if (balloon.getY() + 128 < 0) {
+            if(this.lvl == 3)  balloon.setY((int) (300 * Gdx.graphics.getDeltaTime()));// += 200 * Gdx.graphics.getDeltaTime();
+           else balloon.setY((int) (200 * Gdx.graphics.getDeltaTime()));// += 200 * Gdx.graphics.getDeltaTime();
+            if (balloon.getY() + balloon.height < 0) {
                 iter.remove();
             }
 
@@ -251,39 +256,49 @@ public class Balloon extends ApplicationAdapter {
 
     public class Balon{
 		public Texture img;
-        public int TYPE;
-		private int x,y,score,height,width,id;
-		//private Rectangle balon;
+        public int TYPE,height,width;
+		private int x,y,score,id,lvl=1;
+
         private boolean Visible = true;
 
-		public Balon(int type,int x,int y,int id){
+		public Balon(int lvl,int type,int x,int y,int id){
 			/**
 			 @param type: 0 RED, 1 GREEN,  2 BLACK, 3 YELLOW
 			 **/
 			this.x = x;
 			this.y = y;
-			this.height = 128;
-			this.width = 128;
-            this.id = id;
+            if(lvl < 2){
+                this.height = 128;
+                this.width = 128;
+            }else{
+                this.height = 82;
+                this.width = 82;
+            }
 
+            this.id = id;
+            this.lvl = lvl;
 			switch (type){
 				case 0:
-					this.img  = new Texture(Gdx.files.internal("balloon-red.png"));
+					if(lvl == 1) this.img  = new Texture(Gdx.files.internal("balloon-red.png"));
+                    else if(lvl >= 2) this.img  = new Texture(Gdx.files.internal("balloon-red64.png"));
 					this.score = 10;
                     this.TYPE = 0;
 					break;
 				case 1:
-					this.img  = new Texture(Gdx.files.internal("balloon-green.png"));
+                    if(lvl == 1) this.img  = new Texture(Gdx.files.internal("balloon-green.png"));
+                    else if(lvl >= 2) this.img  = new Texture(Gdx.files.internal("balloon-green64.png"));
 					this.score = 5;
                     this.TYPE = 1;
 					break;
                 case 2:
-                    this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
+                    if(lvl == 1) this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
+                    else if(lvl >= 2) this.img  = new Texture(Gdx.files.internal("balloon-black64.png"));
                     this.score = -10;
                     this.TYPE = 2;
                     break;
 				case 3:
-					this.img  = new Texture(Gdx.files.internal("balloon-yellow.png"));
+                    if(lvl == 1) this.img  = new Texture(Gdx.files.internal("balloon-yellow.png"));
+                    else if(lvl >= 2) this.img  = new Texture(Gdx.files.internal("balloon-yellow64.png"));
 					this.score = 20;
                     this.TYPE = 3;
 					break;
@@ -293,15 +308,37 @@ public class Balloon extends ApplicationAdapter {
 
 		}
 
+        public void lvlUp(){
+            this.lvl++;
+            this.height = 64;
+            this.width = 64;
+            switch (this.TYPE){
+                case 0:
+                    this.img  = new Texture(Gdx.files.internal("balloon-red64.png"));
+                    break;
+                case 1:
+                    this.img  = new Texture(Gdx.files.internal("balloon-green64.png"));
+                    break;
+                case 2:
+                    this.img  = new Texture(Gdx.files.internal("balloon-black64.png"));
+                    break;
+                case 3:
+                    this.img  = new Texture(Gdx.files.internal("balloon-yellow64.png"));
+                    break;
+            }
+        }
+
         public void updateBalon(int type){
             switch (type){
                 case 1:
-                    this.img  = new Texture(Gdx.files.internal("balloon-green.png"));
+                    if(this.lvl ==1) this.img  = new Texture(Gdx.files.internal("balloon-green.png"));
+                    else if(this.lvl >= 2) this.img  = new Texture(Gdx.files.internal("balloon-green64.png"));
                     this.score = 5;
                     this.TYPE = 1;
                     break;
                 case 2:
-                    this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
+                    if(this.lvl ==1) this.img  = new Texture(Gdx.files.internal("balloon-black.png"));
+                    else if(this.lvl >= 2) this.img  = new Texture(Gdx.files.internal("balloon-black64.png"));
                     this.score = -10;
                     this.TYPE = 2;
                     break;
@@ -337,16 +374,18 @@ public class Balloon extends ApplicationAdapter {
         }
 
         public void setY(int y) {
-          if(this.TYPE != 3)  this.y += y;
+          if(this.TYPE != 3){
+              this.y += y;
+              System.out.println("LVL : "+ this.lvl);
+          }
             if(this.TYPE == 0) {
-                if(MathUtils.randomBoolean()) {
-                    if (MathUtils.randomBoolean()) this.x += MathUtils.random(0, 30);
-                    else this.x -= MathUtils.random(0, 30);
+                if(MathUtils.random(0,10)== 9) {
+                    if (MathUtils.randomBoolean()) this.x += MathUtils.random(20, 80);
+                    else this.x -= MathUtils.random(20, 80);
                 }
             }
-          //  if(y + 128 < 0) this.Visible = false;
+
         }
     }
-
 
 }
